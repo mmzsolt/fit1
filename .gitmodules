@@ -1,0 +1,4 @@
+[submodule "extern/SDL2"]
+	path = extern/SDL2
+	url = https://github.com/RetroAchievements/SDL2.git
+	branch = master
