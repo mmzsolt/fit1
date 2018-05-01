@@ -6,6 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${fit1_SOURCE_DIR}/cmake")
 
 set (CMAKE_CXX_STANDARD 14)
 
+include_directories( "extern/eigen" )
 include_directories( "src" )
 
 file (GLOB_RECURSE blah RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "src/*.cpp" "src/*.hpp")

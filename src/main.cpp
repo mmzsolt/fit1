@@ -1,6 +1,7 @@
 #include <iostream>
 #include "SDL.h"
 #include "SDL_mouse.h"
+#include "ray/camera.hpp"
 
 SDL_Window *mainWindow;
 SDL_Surface* screenSurface = NULL;

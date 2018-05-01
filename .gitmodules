@@ -2,3 +2,6 @@
 	path = extern/SDL2
 	url = https://github.com/RetroAchievements/SDL2.git
 	branch = master
+[submodule "extern/eigen"]
+	path = extern/eigen
+	url = https://github.com/eigenteam/eigen-git-mirror.git
