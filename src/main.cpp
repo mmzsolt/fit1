@@ -3,6 +3,7 @@
 #include "SDL_mouse.h"
 #include "ray/camera.hpp"
 #include "ray/sphere.hpp"
+#include "ray/triangle.hpp"
 #include <vector>
 
 SDL_Window *mainWindow;
@@ -11,6 +12,7 @@ SDL_Surface* image = NULL;
 std::vector<float> imageDepth;
 Camera cam;
 std::vector<Sphere> spheres;
+std::vector<Triangle> triangles;
 
 int screenWidth = 512;
 int screenHeight = 512;
@@ -18,6 +20,11 @@ int screenHeight = 512;
 template <typename VEC>
 void render(const VEC& prim)
 {
+	if (prim.empty())
+	{
+		return;
+	}
+
 	int* pixels = static_cast<int*>(image->pixels);
 	auto depths = imageDepth.begin();
 	
@@ -41,11 +48,54 @@ void render(const VEC& prim)
 	}
 }
 
+template<class T>
+struct is_vector : std::false_type {};
+
+template<class T>
+struct is_vector<std::vector<T>> : std::true_type {};
+
+template <typename VEC>
+std::enable_if_t<is_vector<VEC>::value>
+print(const VEC& prim)
+{
+	std::string toPrint;
+	for (const auto& p : prim)
+	{
+		toPrint = p.toString();
+		printf("%s\n", toPrint.c_str());
+	}
+}
+
+template <typename PRIM>
+std::enable_if_t<std::is_same<PRIM, Sphere>::value || std::is_same<PRIM, Triangle>::value>
+print(const PRIM& prim)
+{
+	auto toPrint = prim.toString();
+	printf("%s\n", toPrint.c_str());
+}
+
 void createScene()
 {
-	Eigen::Vector3f pos(0.0f, 0.0f, 10.0f);
-	Sphere sph{ pos, 3.0f };
-	spheres.push_back(sph);
+	/*
+	{
+		Eigen::Vector3f pos(0.0f, 0.0f, 10.0f);
+		Sphere sph{ pos, 3.0f };
+		spheres.push_back(sph);
+	}
+	*/
+	{
+		Eigen::Vector3f pos1(0.0f, -1.0f, 10.0f);
+		Eigen::Vector3f pos2(-1.0f, 1.0f, 10.0f);
+		Eigen::Vector3f pos3(1.0f, 1.0f, 10.0f);
+		Triangle tri{ pos1, pos2, pos3 };
+		triangles.push_back(tri);
+		auto quad = makeQuad({ 0.0f, 3.0f, 10.0f }, 1.0f, 4.0f);		
+		print(quad.first);
+		print(quad.second);
+		triangles.push_back(quad.first);
+		triangles.push_back(quad.second);
+		//print(triangles);
+	}
 }
 
 // taken from http://headerphile.com/sdl2/opengl-part-1-sdl-opengl-awesome/
@@ -132,6 +182,7 @@ void Run()
 		std::fill_n(imageDepth.begin(), imageDepth.size(), FLT_MAX);
 
 		render(spheres);
+		render(triangles);
 
 		SDL_BlitSurface(image, NULL, screenSurface, NULL);
 

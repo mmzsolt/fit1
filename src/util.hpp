@@ -19,5 +19,10 @@ namespace util
 	{
 		return (v - a) / (b - a);
 	}
+
+	static std::string to_string(Eigen::Vector3f v)
+	{
+		return std::string() + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z());
+	}
 }
 

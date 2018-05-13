@@ -1,6 +1,7 @@
 #pragma once
 
 #include "basic.hpp"
+#include "util.hpp"
 
 class Sphere
 {
@@ -51,5 +52,9 @@ public:
 		auto point = r.m_pos + (r.m_dir * distance);
 
 		return Intersection( point, distance );
+	}
+	std::string toString() const
+	{
+		return std::string() + "Sphere((" + util::to_string(m_pos) + ")," + std::to_string(m_radius) + ")";
 	}
 };
