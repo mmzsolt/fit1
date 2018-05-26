@@ -58,10 +58,9 @@ public:
 
 std::pair<Triangle, Triangle> makeQuad(Eigen::Vector3f pos, float w, float h)
 {
-	//auto v0 = pos + decltype(pos)(-w / 2.0f, -h / 2.0f, 0.0f);
-	auto v0 = pos + Eigen::Vector3f(-w / 2.0f, -h / 2.0f, 0.0f);
-	auto v1 = pos + decltype(pos)(w / 2.0f, -h / 2.0f, 0.0f);
-	auto v2 = pos + decltype(pos)(-w / 2.0f, h / 2.0f, 0.0f);
-	auto v3 = pos + decltype(pos)(w / 2.0f, h / 2.0f, 0.0f);
-	return{ Triangle{v0, v1, v2}, Triangle{v1, v3, v2} };
+	decltype(pos) v0 = pos + decltype(pos)(-w / 2.0f, -h / 2.0f, 0.0f);
+	decltype(pos) v1 = pos + decltype(pos)(w / 2.0f, -h / 2.0f, 0.0f);
+	decltype(pos) v2 = pos + decltype(pos)(-w / 2.0f, h / 2.0f, 0.0f);
+	decltype(pos) v3 = pos + decltype(pos)(w / 2.0f, h / 2.0f, 0.0f);
+	return{ Triangle{v0, v1, v2}, Triangle{v1, v3, v2} };	
 }

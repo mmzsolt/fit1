@@ -90,11 +90,8 @@ void createScene()
 		Triangle tri{ pos1, pos2, pos3 };
 		triangles.push_back(tri);
 		auto quad = makeQuad({ 0.0f, 3.0f, 10.0f }, 1.0f, 4.0f);		
-		print(quad.first);
-		print(quad.second);
 		triangles.push_back(quad.first);
 		triangles.push_back(quad.second);
-		//print(triangles);
 	}
 }
 
