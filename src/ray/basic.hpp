@@ -1,5 +1,6 @@
 #pragma once
 #include "Eigen/Dense"
+#include <float.h>
 
 class Ray
 {

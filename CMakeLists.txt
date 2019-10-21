@@ -1,7 +1,9 @@
 project( fit1 )
 cmake_minimum_required( VERSION 3.2 )
 
-set(SDL2_PATH "extern/SDL2")
+if (WIN32)
+    set(SDL2_PATH "extern/SDL2")
+endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${fit1_SOURCE_DIR}/cmake")
 
 set (CMAKE_CXX_STANDARD 14)

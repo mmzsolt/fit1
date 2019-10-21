@@ -220,7 +220,11 @@ void Cleanup()
 	SDL_Quit();
 }
 
+#ifdef __linux__
+int main(int argc, char *argv[])
+#else
 int SDL_main(int argc, char *argv[])
+#endif
 {
 	if (!Init())
 	{
