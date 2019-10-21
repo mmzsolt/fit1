@@ -24,5 +24,10 @@ namespace util
 	{
 		return std::string() + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z());
 	}
+
+	static std::string to_string(vec3fi v)
+	{
+		return std::string() + std::to_string(static_cast<float>(v.x)) + "," + std::to_string(static_cast<float>(v.y)) + "," + std::to_string(static_cast<float>(v.z));
+	}
 }
 

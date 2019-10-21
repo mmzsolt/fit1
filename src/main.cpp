@@ -17,8 +17,8 @@ std::vector<Triangle> triangles;
 int screenWidth = 512;
 int screenHeight = 512;
 
-template <typename VEC>
-void render(const VEC& prim)
+template <typename CAM, typename VEC>
+void render(const CAM& camera, const VEC& prim)
 {
 	if (prim.empty())
 	{
@@ -32,7 +32,7 @@ void render(const VEC& prim)
 	{
 		for (int x = 0; x < image->w; ++x)
 		{
-			Ray r = cam.getRay(static_cast<float>(x), static_cast<float>(y));
+			auto r = camera.getRay(x, y);
 			for (const auto& p : prim)
 			{
 				Intersection inters = p.intersect(r);
@@ -178,8 +178,8 @@ void Run()
 		std::fill_n((int *)image->pixels, image->w * image->h, 0xff000000);
 		std::fill_n(imageDepth.begin(), imageDepth.size(), FLT_MAX);
 
-		render(spheres);
-		render(triangles);
+		render(cam, spheres);
+		render(cam, triangles);
 
 		SDL_BlitSurface(image, NULL, screenSurface, NULL);
 

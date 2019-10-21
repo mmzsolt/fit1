@@ -6,10 +6,11 @@ if (WIN32)
 endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${fit1_SOURCE_DIR}/cmake")
 
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
 
 include_directories( "extern/eigen" )
 include_directories( "src" )
+include_directories( "extern/cnl/include" )
 
 file (GLOB_RECURSE blah RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "src/*.cpp" "src/*.hpp")
 
