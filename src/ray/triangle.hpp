@@ -78,38 +78,36 @@ public:
 		auto e1 = m_v1 - m_v0;
 		auto e2 = m_v2 - m_v0;
 
-		/*
-		auto normal = e1.cross(e2);
-		normal.normalize();
+		auto normal = cross(e1,e2);
+		normal = normalize(normal);
 
-		auto h = r.m_dir.cross(e2);
-		auto a = e1.dot(h);
+		auto h = cross(r.m_dir,e2);
+		auto a = dot(e1,h);
 
-		if (a > -0.00001 && a < 0.00001)
-			return Intersection();
+		if (a > -0.0001 && a < 0.0001)
+			return Intersection_fi();
 
 		auto f = 1 / a;
 		auto s = r.m_pos - m_v0;
 
-		auto u = f * s.dot(h);
+		auto u = f * (dot(s,h));
 
 		if (u < 0.0 || u > 1.0)
-			return Intersection();
+			return Intersection_fi();
 
-		auto q = s.cross(e1);
-		auto v = f * r.m_dir.dot(q);
+		auto q = cross(s,e1);
+		auto v = f * (dot(r.m_dir,q));
 
 		if (v < 0.0 || u + v > 1.0)
-			return Intersection();
+			return Intersection_fi();
 
-		auto distance = f * e2.dot(q);
+		auto distance = f * dot(e2,q);
 
 		// Ray Intersection
-		if (distance > 0.00001) {
+		if (distance > 0.0001) {
 			auto point = r.m_pos + distance * r.m_dir;
-			return Intersection(point, distance);
+			return Intersection_fi(point, distance);
 		}
-		*/
 
 		return Intersection_fi();
 	}

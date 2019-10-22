@@ -3,7 +3,7 @@
 #include <cnl/all.h>
 #include <cnl/elastic_number.h>
 
-using fixScalar = cnl::fixed_point<int64_t, 31, 32>;
+using fixScalar = cnl::fixed_point<int64_t, -16>;
 
 struct vec3fi
 {
@@ -34,6 +34,84 @@ public:
 	bool isValid() const { return m_depth < cnl::numeric_limits<fixScalar>::max(); }
 };
 
-vec3fi operator-(const vec3fi& a, const vec3fi& b);
+namespace util
+{
+	template <typename T>
+	inline T ratio(T v, T a, T b);
 
-vec3fi operator+(const vec3fi& a, const vec3fi& b);
+    template<>
+    inline fixScalar ratio(fixScalar v, fixScalar a, fixScalar b)
+    {
+        cnl::fixed_point<int64_t, -32> num;
+        num = v - a;
+        return num / (b - a);
+    }
+}
+
+inline vec3fi operator-(const vec3fi& a, const vec3fi& b)
+{
+    vec3fi ret;
+    ret.x = a.x - b.x;
+    ret.y = a.y - b.y;
+    ret.z = a.z - b.z;
+    return ret;
+}
+
+inline vec3fi operator+(const vec3fi& a, const vec3fi& b)
+{
+    vec3fi ret;
+    ret.x = a.x + b.x;
+    ret.y = a.y + b.y;
+    ret.z = a.z + b.z;
+    return ret;
+}
+
+inline vec3fi operator*(const vec3fi& a, fixScalar b)
+{
+    vec3fi ret;
+    ret.x = a.x * b;
+    ret.y = a.y * b;
+    ret.z = a.z * b;
+    return ret;
+}
+
+inline vec3fi operator*(fixScalar b, const vec3fi& a)
+{
+    return a*b;
+}
+
+inline vec3fi cross(const vec3fi& a, const vec3fi& b)
+{
+    vec3fi ret;
+    ret.x = a.y * b.z - a.z * b.y;
+    ret.y = a.z * b.x - a.x * b.z;
+    ret.z = a.x * b.y - a.y * b.x;
+    return ret;
+}
+
+inline fixScalar norm(const vec3fi& a)
+{
+    fixScalar sum = a.x * a.x;
+    sum += a.y * a.y;
+    sum += a.z * a.z;    
+    return cnl::sqrt(static_cast<cnl::fixed_point<int32_t, -16>>(sum));
+}
+
+inline vec3fi normalize(const vec3fi& a)
+{
+    auto n = norm(a);
+    if (n == 0)
+    {
+        return a;
+    }
+    auto invn = cnl::fixed_point<int64_t, -32>(1.0) / n;
+    return a * invn;
+}
+
+inline fixScalar dot(const vec3fi& a, const vec3fi& b)
+{
+    fixScalar ret = a.x * b.x;
+    ret += a.y * b.y;
+    ret += a.z * b.z;
+    return ret;
+}

@@ -79,7 +79,7 @@ public:
 		fixScalar yr = util::ratio(fixScalar(yy), fixScalar(0), getHeight()) - fixScalar(0.5);
 
 		vec3fi dir(xr, yr, m_focus);
-		//dir.normalize();
+		dir = normalize(dir);
 		
 		return Ray_fi{ m_pos, dir };
 	}

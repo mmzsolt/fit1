@@ -11,8 +11,10 @@ SDL_Surface* screenSurface = NULL;
 SDL_Surface* image = NULL;
 std::vector<float> imageDepth;
 Camera cam;
+Camera_fi cam_fi;
 std::vector<Sphere> spheres;
 std::vector<Triangle> triangles;
+std::vector<Triangle_fi> triangles_fi;
 
 int screenWidth = 512;
 int screenHeight = 512;
@@ -35,10 +37,10 @@ void render(const CAM& camera, const VEC& prim)
 			auto r = camera.getRay(x, y);
 			for (const auto& p : prim)
 			{
-				Intersection inters = p.intersect(r);
+				auto inters = p.intersect(r);
 				if (inters.isValid() && inters.m_depth < *depths)
 				{
-					*depths = inters.m_depth;
+					*depths = static_cast<float>(inters.m_depth);
 					*pixels |= 0xffffff;
 				}
 			}
@@ -95,6 +97,26 @@ void createScene()
 	}
 }
 
+void createScene_fi()
+{
+	/*
+	{
+		Eigen::Vector3f pos(0.0f, 0.0f, 10.0f);
+		Sphere sph{ pos, 3.0f };
+		spheres.push_back(sph);
+	}
+	*/
+	{
+		vec3fi pos1(0.0f, -1.0f, 10.0f);
+		vec3fi pos2(-1.0f, 1.0f, 10.0f);
+		vec3fi pos3(1.0f, 1.0f, 10.0f);
+		Triangle_fi tri{ pos1, pos2, pos3 };
+		triangles_fi.push_back(tri);
+		auto quad = makeQuad_fi({ 0.0f, 3.0f, 10.0f }, 1.0f, 4.0f);		
+		triangles_fi.push_back(quad.first);
+		triangles_fi.push_back(quad.second);
+	}
+}
 // taken from http://headerphile.com/sdl2/opengl-part-1-sdl-opengl-awesome/
 void CheckSDLError(int line = -1)
 {
@@ -158,14 +180,25 @@ bool Init()
 
 	cam.setWidth(static_cast<float>(screenWidth));
 	cam.setHeight(static_cast<float>(screenHeight));
+	cam_fi.setWidth(screenWidth);
+	cam_fi.setHeight(screenHeight);
 
-	createScene();
+	//createScene();
+	createScene_fi();
 
 	return true;
 }
 
 void Run()
 {
+	//fixScalar a = 2.0;
+	//fixScalar b = 1.3;
+	//auto c = (static_cast<cnl::fixed_point<int64_t, -32>>(a), b);
+	cnl::elastic_number<32, -16> a = 1.0;
+	cnl::elastic_number<32, -16> b = 1.3;
+	auto c = a / b;
+	std::cout << static_cast<float>(c) << std::endl;
+
 	bool loop = true;
 
 	while (loop)
@@ -180,6 +213,7 @@ void Run()
 
 		render(cam, spheres);
 		render(cam, triangles);
+		render(cam_fi, triangles_fi);
 
 		SDL_BlitSurface(image, NULL, screenSurface, NULL);
 
