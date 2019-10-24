@@ -14,6 +14,7 @@ Camera cam;
 Camera_fi cam_fi;
 std::vector<Sphere> spheres;
 std::vector<Triangle> triangles;
+std::vector<Sphere_fi> spheres_fi;
 std::vector<Triangle_fi> triangles_fi;
 
 int screenWidth = 512;
@@ -78,13 +79,12 @@ print(const PRIM& prim)
 
 void createScene()
 {
-	/*
 	{
 		Eigen::Vector3f pos(0.0f, 0.0f, 10.0f);
 		Sphere sph{ pos, 3.0f };
 		spheres.push_back(sph);
 	}
-	*/
+	/*
 	{
 		Eigen::Vector3f pos1(0.0f, -1.0f, 10.0f);
 		Eigen::Vector3f pos2(-1.0f, 1.0f, 10.0f);
@@ -95,17 +95,17 @@ void createScene()
 		triangles.push_back(quad.first);
 		triangles.push_back(quad.second);
 	}
+	*/
 }
 
 void createScene_fi()
 {
-	/*
 	{
-		Eigen::Vector3f pos(0.0f, 0.0f, 10.0f);
-		Sphere sph{ pos, 3.0f };
-		spheres.push_back(sph);
+		vec3fi pos(0.0f, 0.0f, 10.0f);
+		Sphere_fi sph{ pos, 3.0f };
+		spheres_fi.push_back(sph);
 	}
-	*/
+	/*
 	{
 		vec3fi pos1(0.0f, -1.0f, 10.0f);
 		vec3fi pos2(-1.0f, 1.0f, 10.0f);
@@ -116,6 +116,7 @@ void createScene_fi()
 		triangles_fi.push_back(quad.first);
 		triangles_fi.push_back(quad.second);
 	}
+	*/
 }
 // taken from http://headerphile.com/sdl2/opengl-part-1-sdl-opengl-awesome/
 void CheckSDLError(int line = -1)
@@ -205,6 +206,7 @@ void Run()
 
 		render(cam, spheres);
 		render(cam, triangles);
+		render(cam_fi, spheres_fi);
 		render(cam_fi, triangles_fi);
 
 		SDL_BlitSurface(image, NULL, screenSurface, NULL);
