@@ -115,3 +115,12 @@ inline fixScalar dot(const vec3fi& a, const vec3fi& b)
     ret += a.z * b.z;
     return ret;
 }
+
+inline vec3fi rcp(const vec3fi& a)
+{
+    vec3fi ret;
+    ret.x = cnl::fixed_point<int64_t, -32>(1.0) / a.x;
+    ret.y = cnl::fixed_point<int64_t, -32>(1.0) / a.y;
+    ret.z = cnl::fixed_point<int64_t, -32>(1.0) / a.z;
+    return ret;
+}

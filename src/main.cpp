@@ -4,6 +4,7 @@
 #include "ray/camera.hpp"
 #include "ray/sphere.hpp"
 #include "ray/triangle.hpp"
+#include "ray/aabb.hpp"
 #include <vector>
 
 SDL_Window *mainWindow;
@@ -14,6 +15,7 @@ Camera cam;
 Camera_fi cam_fi;
 std::vector<Sphere> spheres;
 std::vector<Triangle> triangles;
+std::vector<AABB> aabbs;
 std::vector<Sphere_fi> spheres_fi;
 std::vector<Triangle_fi> triangles_fi;
 
@@ -79,11 +81,13 @@ print(const PRIM& prim)
 
 void createScene()
 {
+	/*
 	{
 		Eigen::Vector3f pos(0.0f, 0.0f, 10.0f);
 		Sphere sph{ pos, 3.0f };
 		spheres.push_back(sph);
 	}
+	*/
 	/*
 	{
 		Eigen::Vector3f pos1(0.0f, -1.0f, 10.0f);
@@ -96,6 +100,13 @@ void createScene()
 		triangles.push_back(quad.second);
 	}
 	*/
+	{
+		Eigen::Vector3f pos1(-3.0f, -3.0f, 10.0f);
+		Eigen::Vector3f pos2(-1.0f, -1.0f, 20.0f);
+		AABB aabb{ pos1, pos2 };
+		aabb.fix();
+		aabbs.push_back(aabb);
+	}
 }
 
 void createScene_fi()
@@ -184,8 +195,8 @@ bool Init()
 	cam_fi.setWidth(screenWidth);
 	cam_fi.setHeight(screenHeight);
 
-	//createScene();
-	createScene_fi();
+	createScene();
+	//createScene_fi();
 
 	return true;
 }
@@ -206,6 +217,7 @@ void Run()
 
 		render(cam, spheres);
 		render(cam, triangles);
+		render(cam, aabbs);
 		render(cam_fi, spheres_fi);
 		render(cam_fi, triangles_fi);
 

@@ -20,6 +20,38 @@ namespace util
 		return (v - a) / (b - a);
 	}
 
+	inline Eigen::Vector3f min(const Eigen::Vector3f& a, const Eigen::Vector3f& b)
+	{
+		return Eigen::Vector3f
+		(
+			a.x() < b.x() ? a.x() : b.x(),
+			a.y() < b.y() ? a.y() : b.y(),
+			a.z() < b.z() ? a.z() : b.z()
+		);
+	}
+
+	inline Eigen::Vector3f max(const Eigen::Vector3f& a, const Eigen::Vector3f& b)
+	{
+		return Eigen::Vector3f
+		(
+			a.x() > b.x() ? a.x() : b.x(),
+			a.y() > b.y() ? a.y() : b.y(),
+			a.z() > b.z() ? a.z() : b.z()
+		);
+	}
+
+	inline float max_component(const Eigen::Vector3f& a)
+	{
+		float tempMax = std::max(a.x(), a.y());
+		return std::max(tempMax, a.z());
+	}
+
+	inline float min_component(const Eigen::Vector3f& a)
+	{
+		float tempMin = std::min(a.x(), a.y());
+		return std::min(tempMin, a.z());
+	}
+
 	static std::string to_string(Eigen::Vector3f v)
 	{
 		return std::string() + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z());
