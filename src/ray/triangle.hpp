@@ -87,7 +87,7 @@ public:
 		if (a > -0.0001 && a < 0.0001)
 			return Intersection_fi();
 
-		auto f = 1 / a;
+		auto f = cnl::fixed_point<int64_t, -32>(1.0) / a;
 		auto s = r.m_pos - m_v0;
 
 		auto u = f * (dot(s,h));
@@ -121,11 +121,14 @@ public:
 
 std::pair<Triangle_fi, Triangle_fi> makeQuad_fi(vec3fi pos, fixScalar w, fixScalar h)
 {
-	fixScalar zero(0);
-	fixScalar two(2);
-	decltype(pos) v0 = pos + decltype(pos)(zero - (w/two), zero - (h/two), zero);
-	decltype(pos) v1 = pos + decltype(pos)(w / two, zero - (h / two), zero);
-	decltype(pos) v2 = pos + decltype(pos)(zero - (w / two), h / two, zero);
-	decltype(pos) v3 = pos + decltype(pos)(w / two, h / two, zero);
+	fixScalar w_2 = w / 2;
+	fixScalar mw_2 = - w_2;
+	fixScalar h_2 = h / 2;
+	fixScalar mh_2 = - h_2;
+
+	decltype(pos) v0 = pos + decltype(pos)(mw_2, mh_2, 0);
+	decltype(pos) v1 = pos + decltype(pos)(w_2, mh_2, 0);
+	decltype(pos) v2 = pos + decltype(pos)(mw_2, h_2, 0);
+	decltype(pos) v3 = pos + decltype(pos)(w_2, h_2, 0);
 	return{ Triangle_fi{v0, v1, v2}, Triangle_fi{v1, v3, v2} };	
 }

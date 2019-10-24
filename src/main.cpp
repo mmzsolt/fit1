@@ -191,14 +191,6 @@ bool Init()
 
 void Run()
 {
-	//fixScalar a = 2.0;
-	//fixScalar b = 1.3;
-	//auto c = (static_cast<cnl::fixed_point<int64_t, -32>>(a), b);
-	cnl::elastic_number<32, -16> a = 1.0;
-	cnl::elastic_number<32, -16> b = 1.3;
-	auto c = a / b;
-	std::cout << static_cast<float>(c) << std::endl;
-
 	bool loop = true;
 
 	while (loop)
