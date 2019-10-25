@@ -22,3 +22,12 @@ public:
 	bool isValid() const { return m_depth < FLT_MAX; }
 };
 
+class Primitive
+{
+public:
+	Primitive() {}
+	virtual ~Primitive() {}
+	virtual Intersection intersect(Ray r) const = 0;
+	virtual std::string toString() const = 0;
+	Eigen::Vector3f m_color = {1.0f, 1.0f, 1.0f};
+};

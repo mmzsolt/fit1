@@ -4,12 +4,14 @@
 #include "basic_fixed.hpp"
 #include "util.hpp"
 
-class AABB
+class AABB : public Primitive
 {
 public:
+    AABB() : Primitive() {}
+    AABB(Eigen::Vector3f _min, Eigen::Vector3f _max) : Primitive(), m_min(_min), m_max(_max) {}
 	Eigen::Vector3f m_min;
     Eigen::Vector3f m_max;
-    Intersection intersect(Ray r) const
+    virtual Intersection intersect(Ray r) const override
 	{
         Eigen::Vector3f rcpRayDir = r.m_dir.array().inverse();
         Eigen::Vector3f t0 = (m_min - r.m_pos).array() * rcpRayDir.array();
@@ -35,7 +37,7 @@ public:
             std::swap(m_min, m_max);
         }
     }
-	std::string toString() const
+	virtual std::string toString() const override
 	{
 		return std::string() + "AABB((" + util::to_string(m_min) + "),(" + util::to_string(m_max) + "))";
 	}

@@ -6,6 +6,9 @@
 #include "ray/triangle.hpp"
 #include "ray/aabb.hpp"
 #include <vector>
+#include <memory>
+#include "ray/scene.hpp"
+#include "ray/light.hpp"
 
 SDL_Window *mainWindow;
 SDL_Surface* screenSurface = NULL;
@@ -18,6 +21,8 @@ std::vector<Triangle> triangles;
 std::vector<AABB> aabbs;
 std::vector<Sphere_fi> spheres_fi;
 std::vector<Triangle_fi> triangles_fi;
+
+Scene<Primitive, Light> scene;
 
 int screenWidth = 512;
 int screenHeight = 512;
@@ -129,6 +134,22 @@ void createScene_fi()
 	}
 	*/
 }
+
+void createScene2()
+{
+	{
+		Eigen::Vector3f pos(0.0f, 0.0f, 10.0f);
+		scene.m_primitives.push_back(std::make_shared<Sphere>(pos, 3.0f));
+	}
+	{
+		Eigen::Vector3f pos1(-3.0f, -3.0f, 10.0f);
+		Eigen::Vector3f pos2(-1.0f, -1.0f, 20.0f);
+		auto aabb = std::make_shared<AABB>(pos1, pos2);
+		aabb->fix();
+		scene.m_primitives.push_back(aabb);
+	}
+}
+
 // taken from http://headerphile.com/sdl2/opengl-part-1-sdl-opengl-awesome/
 void CheckSDLError(int line = -1)
 {
@@ -195,7 +216,8 @@ bool Init()
 	cam_fi.setWidth(screenWidth);
 	cam_fi.setHeight(screenHeight);
 
-	createScene();
+	createScene2();
+	//createScene();
 	//createScene_fi();
 
 	return true;
@@ -215,11 +237,14 @@ void Run()
 		std::fill_n((int *)image->pixels, image->w * image->h, 0xff000000);
 		std::fill_n(imageDepth.begin(), imageDepth.size(), FLT_MAX);
 
+		/*
 		render(cam, spheres);
 		render(cam, triangles);
 		render(cam, aabbs);
 		render(cam_fi, spheres_fi);
 		render(cam_fi, triangles_fi);
+		*/
+		scene.render(cam, (int *)image->pixels, &imageDepth[0]);
 
 		SDL_BlitSurface(image, NULL, screenSurface, NULL);
 

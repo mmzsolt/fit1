@@ -4,12 +4,14 @@
 #include "basic_fixed.hpp"
 #include "util.hpp"
 
-class Sphere
+class Sphere : public Primitive
 {
 public:
+	Sphere() : Primitive() {}
+	Sphere(Eigen::Vector3f _pos, float _radius) : Primitive(), m_pos(_pos ), m_radius(_radius) {}
 	Eigen::Vector3f m_pos;
 	float m_radius;
-	Intersection intersect(Ray r) const
+	virtual Intersection intersect(Ray r) const override
 	{
 		// i'm too lazy, it's from here: https://github.com/marczych/RayTracer/blob/master/src/Sphere.cpp
 		auto deltap = r.m_pos - m_pos;
@@ -54,7 +56,7 @@ public:
 
 		return Intersection( point, distance );
 	}
-	std::string toString() const
+	virtual std::string toString() const override
 	{
 		return std::string() + "Sphere((" + util::to_string(m_pos) + ")," + std::to_string(m_radius) + ")";
 	}
