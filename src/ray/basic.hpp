@@ -20,11 +20,10 @@ public:
 		: m_pos(p)
 		, m_depth(f)
 	{}
-	Intersection(Eigen::Vector3f p, float f, Eigen::Vector3f n, const Primitive* prim)
+	Intersection(Eigen::Vector3f p, float f, Eigen::Vector3f n)
 		: m_pos(p)
 		, m_depth(f)
 		, m_normal(n)
-		, m_primitive(prim)
 	{}
 	Eigen::Vector3f m_pos;
 	float m_depth = FLT_MAX;
@@ -33,6 +32,10 @@ public:
 	bool isValid() const { return m_depth < FLT_MAX; }	
 };
 
+enum class LightingType { Phong, LightSource };
+
+enum class ShadowCastingType { Yes, No, All };
+
 class Primitive
 {
 public:
@@ -40,4 +43,7 @@ public:
 	virtual ~Primitive() {}
 	virtual Intersection intersect(Ray r) const = 0;
 	virtual std::string toString() const = 0;
+	Eigen::Vector3f m_color = {1.0f, 1.0f, 1.0f};
+	LightingType m_lighting = LightingType::Phong;
+	ShadowCastingType m_shadowCasting = ShadowCastingType::Yes;
 };

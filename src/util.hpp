@@ -59,6 +59,14 @@ namespace util
 		return dir;
 	}
 
+	inline std::pair<float, Eigen::Vector3f> directionAndDistance(const Eigen::Vector3f& from, const Eigen::Vector3f& to)
+	{
+		Eigen::Vector3f dir = to - from;
+		float length = dir.lpNorm<2>();
+		dir = (1.0f / length) * dir;
+		return std::make_pair(length, dir);
+	}
+
 	inline Eigen::Vector3f reflect(const Eigen::Vector3f& normal, const Eigen::Vector3f& vec)
 	{
 		auto ret = 2.0f * normal.dot(vec) * normal - vec;
@@ -78,6 +86,15 @@ namespace util
 		uint32_t b = floatToColorInt(color.z());
 		uint32_t res = r | (g << 8) | (b << 16);
 		return res;
+	}
+
+	inline Eigen::Vector3f calcNormal(const Eigen::Vector3f& a, const Eigen::Vector3f& b, const Eigen::Vector3f& c)
+	{
+		Eigen::Vector3f ab = a - b;
+		Eigen::Vector3f ac = a - c;
+		ab.normalize();
+		ac.normalize();
+		return ab.cross(ac);
 	}
 
 	static std::string to_string(Eigen::Vector3f v)

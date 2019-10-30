@@ -8,10 +8,14 @@ class Triangle : public Primitive
 {
 public:
 	Triangle() : Primitive() {}
-	Triangle(Eigen::Vector3f _v0, Eigen::Vector3f _v1, Eigen::Vector3f _v2) : Primitive(), m_v0(_v0), m_v1(_v1), m_v2(_v2) {}
+	Triangle(Eigen::Vector3f _v0, Eigen::Vector3f _v1, Eigen::Vector3f _v2) : Primitive(), m_v0(_v0), m_v1(_v1), m_v2(_v2)
+	{
+		m_normal = util::calcNormal(m_v0, m_v1, m_v2);
+	}
 	Eigen::Vector3f m_v0;
 	Eigen::Vector3f m_v1;
 	Eigen::Vector3f m_v2;
+	Eigen::Vector3f m_normal;
 	
 	virtual Intersection intersect(Ray r) const override
 	{
@@ -47,7 +51,7 @@ public:
 		// Ray Intersection
 		if (distance > 0.00001) {
 			auto point = r.m_pos + distance * r.m_dir;
-			return Intersection(point, distance);
+			return Intersection(point, distance, m_normal);
 		}
 
 		return Intersection();
@@ -66,7 +70,7 @@ std::pair<Triangle, Triangle> makeQuad(Eigen::Vector3f pos, float w, float h)
 	decltype(pos) v1 = pos + decltype(pos)(w / 2.0f, -h / 2.0f, 0.0f);
 	decltype(pos) v2 = pos + decltype(pos)(-w / 2.0f, h / 2.0f, 0.0f);
 	decltype(pos) v3 = pos + decltype(pos)(w / 2.0f, h / 2.0f, 0.0f);
-	return{ Triangle{v0, v1, v2}, Triangle{v1, v3, v2} };	
+	return{ Triangle{v0, v2, v1}, Triangle{v1, v2, v3} };	
 }
 
 class Triangle_fi

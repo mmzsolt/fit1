@@ -7,8 +7,8 @@
 #include "ray/aabb.hpp"
 #include <vector>
 #include <memory>
-#include "ray/scene.hpp"
 #include "ray/light.hpp"
+#include "ray/scene.hpp"
 
 SDL_Window *mainWindow;
 SDL_Surface* screenSurface = NULL;
@@ -138,7 +138,7 @@ void createScene2()
 {
 	{
 		Eigen::Vector3f pos(0.0f, 0.0f, 10.0f);
-		scene.m_primitives.push_back(std::make_shared<Sphere>(pos, 3.0f));
+		scene.m_primitives.push_back(std::make_shared<Sphere>(pos, 1.0f));
 	}
 	{
 		Eigen::Vector3f pos1(-3.0f, -3.0f, 10.0f);
@@ -147,15 +147,26 @@ void createScene2()
 		//scene.m_primitives.push_back(aabb);
 	}
 	{
-		Eigen::Vector3f pos(5.0f, 5.0f, 10.0f);
+		Eigen::Vector3f pos(2.0f, 0.0f, 5.0f);
 		auto light = std::make_shared<PointLight>(pos, 100.0f);
 		light->m_diffuse = Eigen::Vector3f(1.0f, 0.0f, 0.0f);
+		light->m_shininess = 8.0f;		
 		scene.m_lights.push_back(light);
-		pos.x() = -5.0f;
+		pos.x() = -2.0f;
 		light = std::make_shared<PointLight>(pos, 100.f);
 		light->m_diffuse = Eigen::Vector3f(0.0f, 1.0f, 0.0f);
+		light->m_shininess = 12.0f;
 		scene.m_lights.push_back(light);
 	}
+	{
+		auto quad = makeQuad({ 0.0f, 0.0f, 15.0f }, 10.0f, 10.0f);		
+		quad.first.m_color = Eigen::Vector3f(0.2f, 1.0f, 0.3f);
+		quad.second.m_color = Eigen::Vector3f(0.2f, 1.0f, 0.3f);
+		scene.m_primitives.push_back(std::make_shared<Triangle>(quad.first));
+		scene.m_primitives.push_back(std::make_shared<Triangle>(quad.second));
+	}
+
+	scene.generateLightObjects();
 }
 
 // taken from http://headerphile.com/sdl2/opengl-part-1-sdl-opengl-awesome/

@@ -56,7 +56,7 @@ public:
 
 		auto norm = util::direction(m_pos, point);
 		
-		return Intersection( point, distance, norm, this );
+		return Intersection( point, distance, norm );
 	}
 	virtual std::string toString() const override
 	{

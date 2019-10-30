@@ -15,7 +15,7 @@ public:
     PrimVec m_primitives;
     LightVec m_lights;
 
-    Intersection intersectPrimitives(Ray ray, const Primitive* primitive)
+    Intersection intersectPrimitives(Ray ray, const Primitive* primitive, ShadowCastingType castingFilter)
     {
         Intersection bestIntersection;
         for (const auto& p : m_primitives)
@@ -25,7 +25,13 @@ public:
                 continue;
             }
 
+            if (castingFilter != ShadowCastingType::All && p->m_shadowCasting != castingFilter)
+            {
+                continue;
+            }
+
             auto inters = p->intersect(ray);
+            inters.m_primitive = p.get();
             if (inters.isValid() && inters.m_depth < bestIntersection.m_depth)
             {
                 bestIntersection = inters;
@@ -47,27 +53,52 @@ public:
             for (int x = 0; x < camera.getWidth(); ++x)
             {
                 auto cameraRay = camera.getRay(x, y);
-                Intersection cameraIntersection = intersectPrimitives(cameraRay, nullptr);
+                Intersection cameraIntersection = intersectPrimitives(cameraRay, nullptr, ShadowCastingType::All);
                 if (cameraIntersection.isValid())
                 {
                     Eigen::Vector3f finalColor(0.0f, 0.0f, 0.0f);
-                    for(const auto& light : m_lights)
+                    if (cameraIntersection.m_primitive->m_lighting == LightingType::Phong)
                     {
-                        auto lightDir = light->directionFrom(cameraIntersection.m_pos);
-                        Ray lightRay(cameraIntersection.m_pos, lightDir);
-                        Intersection lightIntersection = intersectPrimitives(lightRay, cameraIntersection.m_primitive);
-                        if (!lightIntersection.isValid())
+                        for(const auto& light : m_lights)
                         {
-                            auto color = light->color(cameraIntersection.m_normal, lightDir, -cameraRay.m_dir);
-                            finalColor += color;
+                            auto [lightDist, lightDir] = light->directionFrom(cameraIntersection.m_pos);
+                            Ray lightRay(cameraIntersection.m_pos, lightDir);
+                            Intersection lightIntersection = intersectPrimitives(lightRay, cameraIntersection.m_primitive, ShadowCastingType::Yes);
+                            if (!lightIntersection.isValid() || lightIntersection.m_depth > lightDist)
+                            {
+                                auto color = light->color(cameraIntersection.m_normal, lightDir, -cameraRay.m_dir);
+                                finalColor += color;
+                            }
                         }
                     }
+                    else if (cameraIntersection.m_primitive->m_lighting == LightingType::LightSource)
+                    {
+                        finalColor = {1.0f, 1.0f, 1.0f};
+                    }
+                    finalColor = finalColor.array() * cameraIntersection.m_primitive->m_color.array();
                     *depths = cameraIntersection.m_depth;
                     *pixels |= util::colorToRGB(finalColor);
                 }
                 ++depths;
                 ++pixels;
             }
+        }
+    }
+
+    void generateLightObjects()
+    {
+        for(const auto& light : m_lights)
+        {            
+            if (light->m_lightType != LightType::Point )
+            {
+                continue;
+            }
+            auto pointLight = static_cast<PointLight*>(light.get());
+            auto sphere = std::make_shared<Sphere>(pointLight->m_pos, 0.1f);
+            sphere->m_shadowCasting = ShadowCastingType::No;
+            sphere->m_color = light->m_diffuse;
+            sphere->m_lighting = LightingType::LightSource;
+            m_primitives.push_back(sphere);
         }
     }
 };
