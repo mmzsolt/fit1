@@ -4,13 +4,16 @@
 #include "basic_fixed.hpp"
 #include "util.hpp"
 
-class Triangle
+class Triangle : public Primitive
 {
 public:
+	Triangle() : Primitive() {}
+	Triangle(Eigen::Vector3f _v0, Eigen::Vector3f _v1, Eigen::Vector3f _v2) : Primitive(), m_v0(_v0), m_v1(_v1), m_v2(_v2) {}
 	Eigen::Vector3f m_v0;
 	Eigen::Vector3f m_v1;
 	Eigen::Vector3f m_v2;
-	Intersection intersect(Ray r) const
+	
+	virtual Intersection intersect(Ray r) const override
 	{
 		// i'm too lazy, it's from here: https://github.com/marczych/RayTracer/blob/master/src/Triangle.cpp
 		auto e1 = m_v1 - m_v0;
@@ -50,7 +53,7 @@ public:
 		return Intersection();
 	}
 
-	std::string toString() const
+	virtual std::string toString() const override
 	{
 		return std::string() + "Triangle((" + util::to_string(m_v0) + "),(" + util::to_string(m_v1) + "),(" + util::to_string(m_v2) + "))";
 	}

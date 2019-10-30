@@ -109,7 +109,6 @@ void createScene()
 		Eigen::Vector3f pos1(-3.0f, -3.0f, 10.0f);
 		Eigen::Vector3f pos2(-1.0f, -1.0f, 20.0f);
 		AABB aabb{ pos1, pos2 };
-		aabb.fix();
 		aabbs.push_back(aabb);
 	}
 }
@@ -145,8 +144,17 @@ void createScene2()
 		Eigen::Vector3f pos1(-3.0f, -3.0f, 10.0f);
 		Eigen::Vector3f pos2(-1.0f, -1.0f, 20.0f);
 		auto aabb = std::make_shared<AABB>(pos1, pos2);
-		aabb->fix();
-		scene.m_primitives.push_back(aabb);
+		//scene.m_primitives.push_back(aabb);
+	}
+	{
+		Eigen::Vector3f pos(5.0f, 5.0f, 10.0f);
+		auto light = std::make_shared<PointLight>(pos, 100.0f);
+		light->m_diffuse = Eigen::Vector3f(1.0f, 0.0f, 0.0f);
+		scene.m_lights.push_back(light);
+		pos.x() = -5.0f;
+		light = std::make_shared<PointLight>(pos, 100.f);
+		light->m_diffuse = Eigen::Vector3f(0.0f, 1.0f, 0.0f);
+		scene.m_lights.push_back(light);
 	}
 }
 

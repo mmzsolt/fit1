@@ -52,6 +52,34 @@ namespace util
 		return std::min(tempMin, a.z());
 	}
 
+	inline Eigen::Vector3f direction(const Eigen::Vector3f& from, const Eigen::Vector3f& to)
+	{
+		Eigen::Vector3f dir = to - from;
+		dir.normalize();
+		return dir;
+	}
+
+	inline Eigen::Vector3f reflect(const Eigen::Vector3f& normal, const Eigen::Vector3f& vec)
+	{
+		auto ret = 2.0f * normal.dot(vec) * normal - vec;
+		return ret;
+	}
+
+	inline uint32_t floatToColorInt(float f)
+	{
+		uint32_t res = static_cast<uint32_t>(std::round(clamp(f, 0.0f, 1.0f) * 255.0f));
+		return res;
+	}
+
+	inline uint32_t colorToRGB(const Eigen::Vector3f& color)
+	{
+		uint32_t r = floatToColorInt(color.x());
+		uint32_t g = floatToColorInt(color.y());
+		uint32_t b = floatToColorInt(color.z());
+		uint32_t res = r | (g << 8) | (b << 16);
+		return res;
+	}
+
 	static std::string to_string(Eigen::Vector3f v)
 	{
 		return std::string() + std::to_string(v.x()) + "," + std::to_string(v.y()) + "," + std::to_string(v.z());

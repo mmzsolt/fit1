@@ -14,7 +14,26 @@ public:
     using LightVec = std::vector<LightPtr>;
     PrimVec m_primitives;
     LightVec m_lights;
-    
+
+    Intersection intersectPrimitives(Ray ray, const Primitive* primitive)
+    {
+        Intersection bestIntersection;
+        for (const auto& p : m_primitives)
+        {
+            if (p.get() == primitive)
+            {
+                continue;
+            }
+
+            auto inters = p->intersect(ray);
+            if (inters.isValid() && inters.m_depth < bestIntersection.m_depth)
+            {
+                bestIntersection = inters;
+            }
+        }
+        return bestIntersection;
+    }
+
     template <typename CAM>
     void render(const CAM& camera, int* pixels, float* depths)
     {
@@ -27,15 +46,24 @@ public:
         {
             for (int x = 0; x < camera.getWidth(); ++x)
             {
-                auto r = camera.getRay(x, y);
-                for (const auto& p : m_primitives)
+                auto cameraRay = camera.getRay(x, y);
+                Intersection cameraIntersection = intersectPrimitives(cameraRay, nullptr);
+                if (cameraIntersection.isValid())
                 {
-                    auto inters = p->intersect(r);
-                    if (inters.isValid() && inters.m_depth < *depths)
+                    Eigen::Vector3f finalColor(0.0f, 0.0f, 0.0f);
+                    for(const auto& light : m_lights)
                     {
-                        *depths = static_cast<float>(inters.m_depth);
-                        *pixels |= 0xffffff;
+                        auto lightDir = light->directionFrom(cameraIntersection.m_pos);
+                        Ray lightRay(cameraIntersection.m_pos, lightDir);
+                        Intersection lightIntersection = intersectPrimitives(lightRay, cameraIntersection.m_primitive);
+                        if (!lightIntersection.isValid())
+                        {
+                            auto color = light->color(cameraIntersection.m_normal, lightDir, -cameraRay.m_dir);
+                            finalColor += color;
+                        }
                     }
+                    *depths = cameraIntersection.m_depth;
+                    *pixels |= util::colorToRGB(finalColor);
                 }
                 ++depths;
                 ++pixels;

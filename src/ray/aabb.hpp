@@ -30,13 +30,6 @@ public:
             return Intersection(point, tminc);
         }        
     }
-    void fix()
-    {
-        if (m_min.norm() > m_max.norm())
-        {
-            std::swap(m_min, m_max);
-        }
-    }
 	virtual std::string toString() const override
 	{
 		return std::string() + "AABB((" + util::to_string(m_min) + "),(" + util::to_string(m_max) + "))";
