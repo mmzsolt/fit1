@@ -138,14 +138,40 @@ void createScene2()
 {
 	{
 		Eigen::Vector3f pos(0.0f, 0.0f, 10.0f);
-		scene.m_primitives.push_back(std::make_shared<Sphere>(pos, 1.0f));
+		//scene.m_primitives.push_back(std::make_shared<Sphere>(pos, 1.0f));
 	}
 	{
 		Eigen::Vector3f pos1(-3.0f, -3.0f, 10.0f);
 		Eigen::Vector3f pos2(-1.0f, -1.0f, 20.0f);
 		auto aabb = std::make_shared<AABB>(pos1, pos2);
-		//scene.m_primitives.push_back(aabb);
+		scene.m_primitives.push_back(aabb);
 	}
+	{
+		Eigen::Vector3f pos1(3.0f, -3.0f, 10.0f);
+		Eigen::Vector3f pos2(1.0f, -1.0f, 20.0f);
+		auto aabb = std::make_shared<AABB>(pos1, pos2);
+		scene.m_primitives.push_back(aabb);
+	}
+	{
+		Eigen::Vector3f pos1(-3.0f, 3.0f, 10.0f);
+		Eigen::Vector3f pos2(-1.0f, 1.0f, 20.0f);
+		auto aabb = std::make_shared<AABB>(pos1, pos2);
+		scene.m_primitives.push_back(aabb);
+	}
+	{
+		Eigen::Vector3f pos1(3.0f, 3.0f, 10.0f);
+		Eigen::Vector3f pos2(1.0f, 1.0f, 20.0f);
+		auto aabb = std::make_shared<AABB>(pos1, pos2);
+		scene.m_primitives.push_back(aabb);
+	}
+	/*
+	{
+		Eigen::Vector3f pos1(-1.0f, -1.0f, 9.0f);
+		Eigen::Vector3f pos2(1.0f, 1.0f, 11.0f);
+		auto aabb = std::make_shared<AABB>(pos1, pos2);
+		scene.m_primitives.push_back(aabb);
+	}
+	*/
 	{
 		Eigen::Vector3f pos(2.0f, 0.0f, 5.0f);
 		auto light = std::make_shared<PointLight>(pos, 100.0f);
@@ -162,8 +188,8 @@ void createScene2()
 		auto quad = makeQuad({ 0.0f, 0.0f, 15.0f }, 10.0f, 10.0f);		
 		quad.first.m_color = Eigen::Vector3f(0.2f, 1.0f, 0.3f);
 		quad.second.m_color = Eigen::Vector3f(0.2f, 1.0f, 0.3f);
-		scene.m_primitives.push_back(std::make_shared<Triangle>(quad.first));
-		scene.m_primitives.push_back(std::make_shared<Triangle>(quad.second));
+		//scene.m_primitives.push_back(std::make_shared<Triangle>(quad.first));
+		//scene.m_primitives.push_back(std::make_shared<Triangle>(quad.second));
 	}
 
 	scene.generateLightObjects();

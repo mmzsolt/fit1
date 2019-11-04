@@ -52,6 +52,40 @@ namespace util
 		return std::min(tempMin, a.z());
 	}
 
+	inline std::pair<float, int> max_component_index(const Eigen::Vector3f& a)
+	{
+		float max_v = a.x();
+		int max_i = 0;
+		if (a.y() > max_v)
+		{
+			max_v = a.y();
+			max_i = 1;
+		}
+		if (a.z() > max_v)
+		{
+			max_v = a.z();
+			max_i = 2;
+		}
+		return {max_v, max_i};
+	}
+
+	inline std::pair<float, int> min_component_index(const Eigen::Vector3f& a)
+	{
+		float min_v = a.x();
+		int min_i = 0;
+		if (a.y() < min_v)
+		{
+			min_v = a.y();
+			min_i = 1;
+		}
+		if (a.z() < min_v)
+		{
+			min_v = a.z();
+			min_i = 2;
+		}
+		return {min_v, min_i};
+	}
+
 	inline Eigen::Vector3f direction(const Eigen::Vector3f& from, const Eigen::Vector3f& to)
 	{
 		Eigen::Vector3f dir = to - from;
@@ -97,6 +131,11 @@ namespace util
 		auto ret = ab.cross(ac);
 		ret.normalize();
 		return ret;
+	}
+
+	inline float sign(float f)
+	{
+		return std::signbit(f) ? -1.0f : 1.0f;
 	}
 
 	static std::string to_string(Eigen::Vector3f v)

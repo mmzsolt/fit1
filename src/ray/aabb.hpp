@@ -18,7 +18,7 @@ public:
         Eigen::Vector3f t1 = (m_max - r.m_pos).array() * rcpRayDir.array();
         Eigen::Vector3f tmin = util::min(t0, t1);
         Eigen::Vector3f tmax = util::max(t0, t1);
-        float tminc = util::max_component(tmin);
+        auto [tminc, tmini] = util::max_component_index(tmin);
         float tmaxc = util::min_component(tmax);
         if (tminc > tmaxc)
         {
@@ -27,7 +27,11 @@ public:
         else
         {
        		auto point = r.m_pos + (r.m_dir * tminc);
-            return Intersection(point, tminc);
+            Eigen::Vector3f normal(0.0f, 0.0f, 0.0f);
+            Eigen::Vector3f center = (m_min + m_max).array() * 0.5f;
+            float f = point[tmini] - center[tmini];
+            normal[tmini] = util::sign(f);
+            return Intersection(point, tminc, normal);
         }        
     }
 	virtual std::string toString() const override
