@@ -94,7 +94,9 @@ namespace util
 		Eigen::Vector3f ac = a - c;
 		ab.normalize();
 		ac.normalize();
-		return ab.cross(ac);
+		auto ret = ab.cross(ac);
+		ret.normalize();
+		return ret;
 	}
 
 	static std::string to_string(Eigen::Vector3f v)
