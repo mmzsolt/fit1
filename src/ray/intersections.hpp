@@ -92,6 +92,14 @@ float &t, Eigen::Vector3f& d)
     }    
 }
 
+inline void ClosestPtPointAABB(const Eigen::Vector3f& p, const Eigen::Vector3f& mi, const Eigen::Vector3f& ma,
+float& dist, Eigen::Vector3f& r)
+{
+    r = util::max(p, mi);
+    r = util::min(r, ma);
+    dist = util::distance(r, p);
+}
+
 inline bool intersect(const Capsule& capsule, const AABB& aabb, Eigen::Vector3f& pC, Eigen::Vector3f& pS, float& dist)
 {
     float s, t;
@@ -100,9 +108,7 @@ inline bool intersect(const Capsule& capsule, const AABB& aabb, Eigen::Vector3f&
 
 inline bool intersect(const Sphere& sphere1, const Sphere& sphere2, Eigen::Vector3f& pS1, Eigen::Vector3f& pS2, float& dist)
 {
-    Eigen::Vector3f vec = sphere2.m_pos - sphere1.m_pos;
-    float vecLen = vec.lpNorm<2>();
-    vec *= 1.0f / vecLen;
+    auto [vecLen, vec] = util::directionAndDistance(sphere1.m_pos, sphere2.m_pos);
     pS1 = sphere1.m_pos + vec * sphere1.m_radius;
     pS2 = sphere2.m_pos - vec * sphere2.m_radius;
     dist = vecLen - sphere1.m_radius - sphere2.m_radius;
@@ -116,11 +122,18 @@ inline bool intersect(const Capsule& capsule, const Sphere& sphere, Eigen::Vecto
     // calculate the closest point on the segment to the center of the sphere
     ClosestPtPointSegment(sphere.m_pos, capsule.m_min, capsule.m_max, t, segPt);
     // connecting vector between intersection point on segment and sphere center
-    Eigen::Vector3f vec = segPt - sphere.m_pos;
-    float vecLen = vec.lpNorm<2>();
-    vec *= 1.0f / vecLen;
+    auto [vecLen, vec] = util::directionAndDistance(sphere.m_pos, segPt);
     pS = sphere.m_pos + vec * sphere.m_radius;
     pC = segPt - vec * capsule.m_radius;
     dist = vecLen - sphere.m_radius - capsule.m_radius;
+    return util::isNegative(dist);
+}
+
+inline bool intersect(const AABB& aabb, const Sphere& sphere, Eigen::Vector3f& pA, Eigen::Vector3f& pS, float& dist)
+{
+    ClosestPtPointAABB(sphere.m_pos, aabb.m_min, aabb.m_max, dist, pA);
+    dist -= sphere.m_radius;
+    auto vec = util::direction(sphere.m_pos, pA);
+    pS = sphere.m_pos + vec * sphere.m_radius;
     return util::isNegative(dist);
 }

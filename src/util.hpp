@@ -91,7 +91,7 @@ namespace util
 		Eigen::Vector3f dir = to - from;
 		dir.normalize();
 		return dir;
-	}
+	}	
 
 	inline std::pair<float, Eigen::Vector3f> directionAndDistance(const Eigen::Vector3f& from, const Eigen::Vector3f& to)
 	{
@@ -99,6 +99,13 @@ namespace util
 		float length = dir.lpNorm<2>();
 		dir = (1.0f / length) * dir;
 		return std::make_pair(length, dir);
+	}
+
+	inline float distance(const Eigen::Vector3f& from, const Eigen::Vector3f& to)
+	{
+		Eigen::Vector3f dir = to - from;
+		float length = dir.lpNorm<2>();
+		return length;
 	}
 
 	inline Eigen::Vector3f reflect(const Eigen::Vector3f& normal, const Eigen::Vector3f& vec)
