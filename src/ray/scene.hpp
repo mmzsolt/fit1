@@ -101,4 +101,13 @@ public:
             m_primitives.push_back(sphere);
         }
     }
+
+    void addIntersectionPoint(const Eigen::Vector3f& pos)
+    {
+        auto sphere = std::make_shared<Sphere>(pos, 0.1f);
+        sphere->m_shadowCasting = ShadowCastingType::No;
+        sphere->m_color = Eigen::Vector3f(0.0f, 1.0f, 1.0f);
+        sphere->m_lighting = LightingType::LightSource;
+        m_primitives.push_back(sphere);
+    }
 };

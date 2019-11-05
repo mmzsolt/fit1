@@ -8,8 +8,12 @@
 #include "ray/capsule.hpp"
 #include <vector>
 #include <memory>
+#include "ray/intersections.hpp"
 #include "ray/light.hpp"
 #include "ray/scene.hpp"
+
+using SpherePtr = std::shared_ptr<Sphere>;
+using CapsulePtr = std::shared_ptr<Capsule>;
 
 SDL_Window *mainWindow;
 SDL_Surface* screenSurface = NULL;
@@ -137,42 +141,32 @@ void createScene_fi()
 
 void createScene2()
 {
+	SpherePtr sphere;
+	SpherePtr sphere2;
+	CapsulePtr capsule;
 	{
-		Eigen::Vector3f pos(0.0f, 0.0f, 10.0f);
-		//scene.m_primitives.push_back(std::make_shared<Sphere>(pos, 1.0f));
+		Eigen::Vector3f pos(-3.0f, -2.0f, 10.0f);
+		sphere = std::make_shared<Sphere>(pos, 1.0f);
+		scene.m_primitives.push_back(sphere);		
+	}
+	{
+		Eigen::Vector3f pos(-2.0f, 3.0f, 10.0f);
+		sphere2 = std::make_shared<Sphere>(pos, 0.5f);
+		scene.m_primitives.push_back(sphere2);
 	}
 	/*
 	{
-		Eigen::Vector3f pos1(-3.0f, -3.0f, 10.0f);
-		Eigen::Vector3f pos2(-1.0f, -1.0f, 20.0f);
-		auto aabb = std::make_shared<AABB>(pos1, pos2);
-		scene.m_primitives.push_back(aabb);
-	}
-	{
-		Eigen::Vector3f pos1(3.0f, -3.0f, 10.0f);
-		Eigen::Vector3f pos2(1.0f, -1.0f, 20.0f);
-		auto aabb = std::make_shared<AABB>(pos1, pos2);
-		scene.m_primitives.push_back(aabb);
-	}
-	{
-		Eigen::Vector3f pos1(-3.0f, 3.0f, 10.0f);
-		Eigen::Vector3f pos2(-1.0f, 1.0f, 20.0f);
-		auto aabb = std::make_shared<AABB>(pos1, pos2);
-		scene.m_primitives.push_back(aabb);
-	}
-	{
-		Eigen::Vector3f pos1(3.0f, 3.0f, 10.0f);
-		Eigen::Vector3f pos2(1.0f, 1.0f, 20.0f);
+		Eigen::Vector3f pos1(-5.0f, -3.0f, 10.0f);
+		Eigen::Vector3f pos2(-3.0f, -1.0f, 20.0f);
 		auto aabb = std::make_shared<AABB>(pos1, pos2);
 		scene.m_primitives.push_back(aabb);
 	}
 	*/
-	
 	{
-		Eigen::Vector3f pos1(-1.0f, -1.0f, 9.0f);
-		Eigen::Vector3f pos2(1.0f, 1.0f, 11.0f);
-		auto caps = std::make_shared<Capsule>(pos1, pos2, 1.0f);
-		scene.m_primitives.push_back(caps);
+		Eigen::Vector3f pos1(0.0f, -1.0f, 10.0f);
+		Eigen::Vector3f pos2(0.0f, 1.0f, 10.0f);
+		capsule = std::make_shared<Capsule>(pos1, pos2, 1.0f);
+		scene.m_primitives.push_back(capsule);
 	}
 	{
 		Eigen::Vector3f pos(2.0f, 0.0f, 5.0f);
@@ -193,6 +187,16 @@ void createScene2()
 		//scene.m_primitives.push_back(std::make_shared<Triangle>(quad.first));
 		//scene.m_primitives.push_back(std::make_shared<Triangle>(quad.second));
 	}
+
+	Eigen::Vector3f p1, p2;
+	float dist;
+	intersect(*capsule, *sphere, p1, p2, dist);
+	scene.addIntersectionPoint(p1);
+	scene.addIntersectionPoint(p2);
+
+	intersect(*sphere2, *sphere, p1, p2, dist);
+	scene.addIntersectionPoint(p1);
+	scene.addIntersectionPoint(p2);
 
 	scene.generateLightObjects();
 }

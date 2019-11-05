@@ -19,6 +19,8 @@
         "numericaldiff": "cpp",
         "openglsupport": "cpp",
         "specialfunctions": "cpp",
-        "splines": "cpp"
+        "splines": "cpp",
+        "*.ipp": "cpp",
+        "string_view": "cpp"
     }
 }
