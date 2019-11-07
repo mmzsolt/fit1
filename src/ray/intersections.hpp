@@ -129,6 +129,18 @@ inline bool intersect(const Capsule& capsule, const Sphere& sphere, Eigen::Vecto
     return util::isNegative(dist);
 }
 
+inline bool intersect(const Capsule& capsule1, const Capsule& capsule2, Eigen::Vector3f& pC1, Eigen::Vector3f& pC2, float& dist)
+{
+    float s, t;
+    Eigen::Vector3f seg1P, seg2P;
+    ClosestPtSegmentSegment(capsule1.m_min, capsule1.m_max, capsule2.m_min, capsule2.m_max, s, t, seg1P, seg2P);
+    auto [segDist, segVec] = util::directionAndDistance(seg1P, seg2P);
+    dist = segDist - capsule1.m_radius - capsule2.m_radius;
+    pC1 = seg1P + segVec * capsule1.m_radius;
+    pC2 = seg2P - segVec * capsule2.m_radius;
+    return util::isNegative(dist);
+}
+
 inline bool intersect(const AABB& aabb, const Sphere& sphere, Eigen::Vector3f& pA, Eigen::Vector3f& pS, float& dist)
 {
     ClosestPtPointAABB(sphere.m_pos, aabb.m_min, aabb.m_max, dist, pA);
