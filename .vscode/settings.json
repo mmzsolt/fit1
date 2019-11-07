@@ -21,6 +21,8 @@
         "specialfunctions": "cpp",
         "splines": "cpp",
         "*.ipp": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "*.tcc": "cpp"
     }
 }

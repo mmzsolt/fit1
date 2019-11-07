@@ -88,7 +88,7 @@ float &t, Eigen::Vector3f& d)
         {
             t = t / denom;
             d = a + t * ab;
-        }        
+        }
     }    
 }
 
@@ -105,6 +105,46 @@ inline bool intersect(const Capsule& capsule, const AABB& aabb, Eigen::Vector3f&
     float s, t;
     return false;
 }
+
+std::array<Eigen::Vector3f, 8> AABBtoVertices(const AABB& aabb)
+{
+    std::array<Eigen::Vector3f, 8> ret;
+    ret[0] = aabb.m_min;
+    ret[1] = {aabb.m_max.x(), aabb.m_min.y(), aabb.m_min.z()};
+    ret[2] = {aabb.m_max.x(), aabb.m_max.y(), aabb.m_min.z()};
+    ret[3] = {aabb.m_min.x(), aabb.m_max.y(), aabb.m_min.z()};
+    ret[4] = {aabb.m_min.x(), aabb.m_min.y(), aabb.m_max.z()};
+    ret[5] = {aabb.m_max.x(), aabb.m_min.y(), aabb.m_max.z()};
+    ret[6] = aabb.m_max;
+    ret[7] = {aabb.m_min.x(), aabb.m_max.y(), aabb.m_max.z()};
+    return ret;
+}
+
+inline std::vector<Eigen::Vector3f> intersectTest(const Capsule& capsule, const AABB& aabb)
+{
+    std::vector<Eigen::Vector3f> pts(4);
+    float s, t;
+    auto vertices = AABBtoVertices(aabb);
+    std::array<std::pair<float, Eigen::Vector3f>, 8> distances;
+    auto distIt = std::begin(distances);
+    for( auto vert: vertices )
+    {
+        Eigen::Vector3f temp;
+        ClosestPtPointSegment(vert, capsule.m_min, capsule.m_max, t, temp);
+        *distIt++ = {util::distance(vert, temp), vert};
+    }
+    std::sort(std::begin(distances), std::end(distances), [](const auto& d1, const auto& d2)
+        {return d1.first < d2.first;});
+
+    // these 4 are the closest points on the AABB to the capsule, they should lie on the same face
+    for(int i = 0; i < 4; ++i)
+    {
+        pts[i] = distances[i].second;
+    }    
+
+    return pts;
+}
+
 
 inline bool intersect(const Sphere& sphere1, const Sphere& sphere2, Eigen::Vector3f& pS1, Eigen::Vector3f& pS2, float& dist)
 {
