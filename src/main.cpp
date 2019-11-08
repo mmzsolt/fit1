@@ -158,7 +158,7 @@ void createScene2()
 		//scene.m_primitives.push_back(sphere2);
 	}
 	{
-		Eigen::Vector3f pos1(-3.0f, -1.0f,10.0f);
+		Eigen::Vector3f pos1(-3.0f, -2.0f,7.0f);
 		Eigen::Vector3f pos2(-2.0f, 1.0f, 20.0f);
 		aabb = std::make_shared<AABB>(pos1, pos2);
 		scene.m_primitives.push_back(aabb);
@@ -170,8 +170,8 @@ void createScene2()
 		//scene.m_primitives.push_back(capsule);
 	}
 	{
-		Eigen::Vector3f pos1(3.0f, -4.0f, 10.0f);
-		Eigen::Vector3f pos2(2.6f, -3.0f, 10.0f);
+		Eigen::Vector3f pos1(0.0f, -2.0f, 9.0f);
+		Eigen::Vector3f pos2(-0.5f, -1.0f, 9.5f);
 		capsule2 = std::make_shared<Capsule>(pos1, pos2, 1.0f);
 		scene.m_primitives.push_back(capsule2);
 	}
@@ -197,15 +197,18 @@ void createScene2()
 
 	Eigen::Vector3f p1, p2;
 	float dist;
-	//intersect(*capsule, *capsule2, p1, p2, dist);
-	//scene.addIntersectionPoint(p1);
-	//scene.addIntersectionPoint(p2);
+	intersect(*capsule2, *aabb, p1, p2, dist);
+	scene.addIntersectionPoint(p1);
+	scene.addIntersectionPoint(p2);
+	
+	/*
 	auto vec = intersectTest(*capsule2, *aabb);
 
 	for (auto v: vec)
 	{
 		scene.addIntersectionPoint(v);
-	}	
+	}
+	*/	
 
 	scene.generateLightObjects();
 }

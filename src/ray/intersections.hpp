@@ -92,18 +92,35 @@ float &t, Eigen::Vector3f& d)
     }    
 }
 
+// from iq :)
+inline float boxDistance(const Eigen::Vector3f& p, const Eigen::Vector3f& rad)
+{
+    auto d = util::abs(p) - rad;
+    Eigen::Vector3f zero(0.0f, 0.0f, 0.0f);
+    return util::max(d, zero).lpNorm<2>() + std::min(util::max_component(d), 0.0f);
+}
+
 inline void ClosestPtPointAABB(const Eigen::Vector3f& p, const Eigen::Vector3f& mi, const Eigen::Vector3f& ma,
 float& dist, Eigen::Vector3f& r)
 {
     r = util::max(p, mi);
     r = util::min(r, ma);
-    dist = util::distance(r, p);
+    //dist = util::distance(r, p);
+    //want signed distance
+    auto center = util::midpoint(mi, ma);
+    auto semisize = center-mi;
+    // yeah, i am this sure in my maths :(
+    assert(semisize.x() > 0.0f && semisize.y() > 0.0f && semisize.y() > 0.0f);
+    dist = boxDistance(p - center, semisize);
 }
 
-inline bool intersect(const Capsule& capsule, const AABB& aabb, Eigen::Vector3f& pC, Eigen::Vector3f& pS, float& dist)
+inline void ClosestPtSegmentPlane(const Eigen::Vector3f& a, const Eigen::Vector3f& b, const Eigen::Vector3f& pn,
+float pd, float& t, Eigen::Vector3f& q)
 {
-    float s, t;
-    return false;
+    // Compute the t value for the directed line ab intersecting the plane
+    auto ab = b - a;
+    t = (pd - pn.dot(a)) / pn.dot(ab);
+    q = a + t * ab;
 }
 
 std::array<Eigen::Vector3f, 8> AABBtoVertices(const AABB& aabb)
@@ -122,27 +139,153 @@ std::array<Eigen::Vector3f, 8> AABBtoVertices(const AABB& aabb)
 
 inline std::vector<Eigen::Vector3f> intersectTest(const Capsule& capsule, const AABB& aabb)
 {
+    struct dist
+    {
+        Eigen::Vector3f m_aabbCorner;
+        Eigen::Vector3f m_capsulePoint;
+        float m_dist;
+    };
     std::vector<Eigen::Vector3f> pts(4);
     float s, t;
     auto vertices = AABBtoVertices(aabb);
-    std::array<std::pair<float, Eigen::Vector3f>, 8> distances;
+    std::array<dist, 8> distances;
     auto distIt = std::begin(distances);
     for( auto vert: vertices )
     {
         Eigen::Vector3f temp;
         ClosestPtPointSegment(vert, capsule.m_min, capsule.m_max, t, temp);
-        *distIt++ = {util::distance(vert, temp), vert};
+        *distIt++ = {vert, temp, util::distance(vert, temp)};
     }
     std::sort(std::begin(distances), std::end(distances), [](const auto& d1, const auto& d2)
-        {return d1.first < d2.first;});
+        {return d1.m_dist < d2.m_dist;});
 
     // these 4 are the closest points on the AABB to the capsule, they should lie on the same face
     for(int i = 0; i < 4; ++i)
     {
-        pts[i] = distances[i].second;
-    }    
+        pts[i] = distances[i].m_aabbCorner;
+    }
+
+    auto planeNormal = util::calcNormal(distances[0].m_aabbCorner, distances[1].m_aabbCorner, distances[2].m_aabbCorner);
+    float planeD = planeNormal.dot(distances[0].m_aabbCorner);
+    Eigen::Vector3f planeIntersection;
+    ClosestPtSegmentPlane(capsule.m_min, capsule.m_max, planeNormal, planeD, t, planeIntersection);
+
+    // if t is between 0 and 1 then the segment intersects the plane
+    if (t >= 0.0f && t <= 1.0f)
+    {
+
+    }
+
+    pts.push_back(planeIntersection);
 
     return pts;
+}
+
+inline Eigen::Vector3f Corner(const AABB& b, int n)
+{
+    Eigen::Vector3f p;
+    p.x() = ((n & 1) ? b.m_max.x() : b.m_min.x());
+    p.y() = ((n & 2) ? b.m_max.y() : b.m_min.y());
+    p.z() = ((n & 4) ? b.m_max.z() : b.m_min.z());
+    return p;
+}
+
+// not really found in Christer's book, let's try to implement it
+inline int IntersectSegmentCapsule(const Eigen::Vector3f& sa, const Eigen::Vector3f& sb, const Eigen::Vector3f& ca, const Eigen::Vector3f& cb, float r, float& t)
+{
+    //temporaries
+    float tt;
+    Eigen::Vector3f c1, c2;
+    ClosestPtSegmentSegment(sa, sb, ca, cb, t, tt, c1, c2);
+    return (util::distance(c1, c2) < r) ? 1 : 0;
+}
+
+// Intersect ray R(t) = p + t*d against AABB a. When intersecting,
+// return intersection distance tmin and point q of intersection
+inline int IntersectRayAABB(const Eigen::Vector3f& p, const Eigen::Vector3f& d, const AABB& a, float &tmin, Eigen::Vector3f &q)
+{
+    tmin = 0.0f;          // set to -FLT_MAX to get first hit on line
+    float tmax = FLT_MAX; // set to max distance ray can travel (for segment)
+
+    // For all three slabs
+    for (int i = 0; i < 3; i++) {
+        if (std::abs(d[i]) < FLT_EPSILON) {
+            // Ray is parallel to slab. No hit if origin not within slab
+            if (p[i] < a.m_min[i] || p[i] > a.m_max[i]) return 0;
+        } else {
+            // Compute intersection t value of ray with near and far plane of slab
+            float ood = 1.0f / d[i];
+            float t1 = (a.m_min[i] - p[i]) * ood;
+            float t2 = (a.m_max[i] - p[i]) * ood;
+            // Make t1 be intersection with near plane, t2 with far plane
+            if (t1 > t2) std::swap(t1, t2);
+            // Compute the intersection of slab intersections intervals
+            tmin = std::max(tmin, t1);
+            tmax = std::min(tmax, t2);
+            // Exit with no collision as soon as slab intersection becomes empty
+            if (tmin > tmax) return 0;
+        }
+    }
+    // Ray intersects all 3 slabs. Return point (q) and intersection t value (tmin) 
+    q = p + d * tmin;
+    return 1;
+}
+
+
+inline int IntersectMovingSphereAABB(const Sphere& s, const Eigen::Vector3f& d, const AABB& b, float &t)
+{
+    // Compute the AABB resulting from expanding b by sphere radius r
+    AABB e = b;
+    e.m_min.array() -= s.m_radius;
+    e.m_max.array() += s.m_radius;
+
+    // Intersect ray against expanded AABB e. Exit with no intersection if ray
+    // misses e, else get intersection point p and time t as result
+    Eigen::Vector3f p;
+    if (!IntersectRayAABB(s.m_pos, d, e, t, p) || t > 1.0f)
+        return 0;
+
+    // Compute which min and max faces of b the intersection point p lies
+    // outside of. Note, u and v cannot have the same bits set and
+    // they must have at least one bit set amongst them
+    int u = 0, v = 0;
+    if (p.x() < b.m_min.x()) u |= 1;
+    if (p.x() > b.m_max.x()) v |= 1;
+    if (p.y() < b.m_min.y()) u |= 2;
+    if (p.y() > b.m_max.y()) v |= 2;
+    if (p.z() < b.m_min.z()) u |= 4;
+    if (p.z() > b.m_max.z()) v |= 4;
+
+    // ‘Or’ all set bits together into a bit mask (note: here u + v == u | v)
+    int m = u + v;
+
+    // Define line segment [c, c+d] specified by the sphere movement
+    const auto segA = s.m_pos;
+    const auto segB = s.m_pos + d;
+
+    // If all 3 bits set (m == 7) then p is in a vertex region
+    if (m == 7) {
+        // Must now intersect segment [c, c+d] against the capsules of the three
+        // edges meeting at the vertex and return the best time, if one or more hit
+        float tmin = FLT_MAX;
+        if (IntersectSegmentCapsule(segA, segB, Corner(b, v), Corner(b, v ^ 1), s.m_radius, t))
+            tmin = std::min(t, tmin);
+        if (IntersectSegmentCapsule(segA, segB, Corner(b, v), Corner(b, v ^ 2), s.m_radius, t))
+            tmin = std::min(t, tmin);
+        if (IntersectSegmentCapsule(segA, segB, Corner(b, v), Corner(b, v ^ 4), s.m_radius, t))
+            tmin = std::min(t, tmin);
+        if (tmin == FLT_MAX) return 0; // No intersection
+        t = tmin;
+        return 1; // Intersection at time t == tmin
+    }
+    // If only one bit set in m, then p is in a face region
+    if ((m & (m - 1)) == 0) {
+        // Do nothing. Time t from intersection with
+        // expanded box is correct intersection time
+        return 1;
+    }
+    // p is in an edge region. Intersect against the capsule at the edge
+    return IntersectSegmentCapsule(segA, segB, Corner(b, u ^ 7), Corner(b, v), s.m_radius, t);
 }
 
 
@@ -185,7 +328,18 @@ inline bool intersect(const AABB& aabb, const Sphere& sphere, Eigen::Vector3f& p
 {
     ClosestPtPointAABB(sphere.m_pos, aabb.m_min, aabb.m_max, dist, pA);
     dist -= sphere.m_radius;
-    auto vec = util::direction(sphere.m_pos, pA);
+    const auto vec = util::direction(sphere.m_pos, pA);
     pS = sphere.m_pos + vec * sphere.m_radius;
     return util::isNegative(dist);
+}
+
+inline bool intersect(const Capsule& capsule, const AABB& aabb, Eigen::Vector3f& pC, Eigen::Vector3f& pA, float& dist)
+{
+    float t;
+    const Sphere s(capsule.m_min, capsule.m_radius);
+    const auto sv = capsule.m_max - capsule.m_min;
+    const auto intersects = IntersectMovingSphereAABB(s, sv, aabb, t);
+    pC = s.m_pos + sv * t;
+    ClosestPtPointAABB(pC, aabb.m_min, aabb.m_max, dist, pA);
+    return intersects == 0 ? false : true;
 }

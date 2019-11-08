@@ -40,6 +40,16 @@ namespace util
 		);
 	}
 
+	inline Eigen::Vector3f abs(const Eigen::Vector3f& a)
+	{
+		return Eigen::Vector3f
+		(
+			a.x() > 0.0f ? a.x() : -a.x(),
+			a.y() > 0.0f ? a.y() : -a.y(),
+			a.z() > 0.0f ? a.z() : -a.z()
+		);
+	}
+
 	inline float max_component(const Eigen::Vector3f& a)
 	{
 		float tempMax = std::max(a.x(), a.y());
@@ -84,6 +94,11 @@ namespace util
 			min_i = 2;
 		}
 		return {min_v, min_i};
+	}
+
+	inline Eigen::Vector3f midpoint(const Eigen::Vector3f& a, const Eigen::Vector3f& b)
+	{
+		return (a + b).array() * 0.5f;
 	}
 
 	inline Eigen::Vector3f direction(const Eigen::Vector3f& from, const Eigen::Vector3f& to)
