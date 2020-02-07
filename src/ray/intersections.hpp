@@ -343,3 +343,114 @@ inline bool intersect(const Capsule& capsule, const AABB& aabb, Eigen::Vector3f&
     ClosestPtPointAABB(pC, aabb.m_min, aabb.m_max, dist, pA);
     return intersects == 0 ? false : true;
 }
+
+inline void sortInterval(float& a1, float& a2)
+{
+    if (a1 > a2)
+    {
+        std::swap(a1, a2);
+    }
+}
+
+inline bool intersectIntervals(float a1, float a2, float b1, float b2, float& ca, float& cb, float& dist)
+{
+    sortInterval(a1, a2);
+    sortInterval(b1, b2);
+    
+    // first interval to the left of second
+    if (a2 <= b1)
+    {
+        ca = a2;
+        cb = b1;
+        dist = b1 - a2;
+        return false;
+    }
+
+    // first interval to the right of second
+    if (a1 >= b2)
+    {
+        ca = a1;
+        cb = b2;
+        dist = a1 - b2;
+        return false;
+    }
+
+    // from here on, we know the intervals intersect so the distances will be negative
+
+    // first interval entirely inside of second or vice versa
+    if ((a1 > b1 && a2 < b2) || (b1 > a1 && b2 < a2))
+    {
+        // distance between starting points of intervals
+        float d1 = a1 - b1;
+        // distance between ending points of intervals
+        float d2 = b2 - a2;
+        // the smaller distance is what we care for
+        if (d1 < d2)
+        {
+            ca = a1;
+            cb = b1;
+            dist = -d1;
+            return true;
+        }
+        else
+        {
+            ca = a2;
+            cb = b2;
+            dist = -d2;
+            return true;
+        }        
+    }
+
+    // first interval overlaps from the left the second one
+    if (a2 > b1 && a2 < b2)
+    {
+        // distance between ending point of first interval and starting point of second interval
+        dist = -(a2 - b1);
+        // first interval penetrated into second up to its ending point
+        ca = a2;
+        // second interval collision point was the starting point
+        cb = b1;
+        return true;
+    }
+
+    // one last case remains, when the first interval overlaps on the right the second one
+    // it is the opposite of the previous case
+    dist = -(b2 - a1);
+    ca = a1;
+    cb = b2;
+    return true;
+}
+
+inline bool intersect(const AABB& aabb1, const AABB& aabb2, Eigen::Vector3f& pA1, Eigen::Vector3f& pA2, float& dist)
+{
+#if 1
+    bool intersects = true;    
+    dist = std::numeric_limits<float>::max();
+    for (int i = 0; i < 3; ++i)
+    {
+        float distAxis;
+        bool intersectsAxis = intersectIntervals(aabb1.m_min[i], aabb1.m_max[i], aabb2.m_min[i], aabb2.m_max[i], pA1[i], pA2[i], distAxis);
+        intersects = intersects && intersectsAxis;
+        if (distAxis < dist)
+        {
+            dist = distAxis;
+        }
+    }
+    return intersects;
+#else
+
+    float ca, cb;
+    float a1 = 2;
+    float a2 = 10;
+    float b1 = -3;
+    float b2 = 3;
+
+    bool ii = intersectIntervals(a1, a2, b1, b2, ca, cb, dist);
+    b1 -= dist;
+    b2 -= dist;
+    ii = intersectIntervals(a1, a2, b1, b2, ca, cb, dist);
+    assert(ii == false);
+
+    return false;
+#endif
+}
