@@ -165,7 +165,7 @@ void createScene2()
 		scene.m_primitives.push_back(aabb);
 	}
 	{
-		Eigen::Vector3f pos1(-0.0f, -2.0f,7.0f);
+		Eigen::Vector3f pos1(-2.5f, -2.0f,7.0f);
 		Eigen::Vector3f pos2(1.0f, -1.0f, 8.0f);
 		aabb2 = std::make_shared<AABB>(pos1, pos2);
 		scene.m_primitives.push_back(aabb2);
@@ -180,7 +180,7 @@ void createScene2()
 		Eigen::Vector3f pos1(0.0f, -2.0f, 9.0f);
 		Eigen::Vector3f pos2(-0.5f, -1.0f, 9.5f);
 		capsule2 = std::make_shared<Capsule>(pos1, pos2, 1.0f);
-		scene.m_primitives.push_back(capsule2);
+		//scene.m_primitives.push_back(capsule2);
 	}
 	{
 		Eigen::Vector3f pos(2.0f, 0.0f, 5.0f);
@@ -204,8 +204,14 @@ void createScene2()
 
 	Eigen::Vector3f p1, p2;
 	float dist;
-	intersect(*capsule2, *aabb, p1, p2, dist);
-	intersect(*aabb, *aabb2, p1, p2, dist);
+	//intersect(*capsule2, *aabb, p1, p2, dist);
+	Eigen::Vector3f distVec;
+	if (intersect(*aabb, *aabb2, p1, p2, distVec) != IntersectionType::None)
+	{
+		//scene.eraseObj(aabb2);
+		//auto aabb3 = std::make_shared<AABB>(aabb2->m_min + distVec, aabb2->m_max + distVec);
+		//scene.m_primitives.push_back(aabb3);
+	}
 	scene.addIntersectionPoint(p1);
 	scene.addIntersectionPoint(p2);
 	

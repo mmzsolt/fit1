@@ -3,6 +3,8 @@
 #include "util.hpp"
 #include "float.h"
 
+enum class IntersectionType { None, Intersection, FirstWhollyInsideSecond, SecondWhollyInsideFirst };
+
 // thanks to Christer Ericson
 inline float ClosestPtSegmentSegment(const Eigen::Vector3f& p1, const Eigen::Vector3f& q1, const Eigen::Vector3f& p2, const Eigen::Vector3f& q2,
                               float &s, float &t, Eigen::Vector3f &c1, Eigen::Vector3f &c2)
@@ -352,105 +354,129 @@ inline void sortInterval(float& a1, float& a2)
     }
 }
 
-inline bool intersectIntervals(float a1, float a2, float b1, float b2, float& ca, float& cb, float& dist)
+inline IntersectionType intersectIntervals(float a1, float a2, float b1, float b2, float& ca, float& cb, float& dist)
 {
     sortInterval(a1, a2);
     sortInterval(b1, b2);
-    
-    // first interval to the left of second
-    if (a2 <= b1)
-    {
-        ca = a2;
-        cb = b1;
-        dist = b1 - a2;
-        return false;
-    }
 
-    // first interval to the right of second
-    if (a1 >= b2)
-    {
-        ca = a1;
-        cb = b2;
-        dist = a1 - b2;
-        return false;
-    }
+    // length of the second interval that will have to move around
+    const auto lb = b2 - b1;
 
-    // from here on, we know the intervals intersect so the distances will be negative
+    const auto [i1, id1] = util::max_component_index(a1, b1);
+    const auto [i2, id2] = util::min_component_index(a2, b2);
 
-    // first interval entirely inside of second or vice versa
-    if ((a1 > b1 && a2 < b2) || (b1 > a1 && b2 < a2))
+    dist = -(i2 - i1);
+
+    const bool intersects = (dist < 0);
+
+    IntersectionType ret = IntersectionType::None;
+
+    if (intersects)
     {
-        // distance between starting points of intervals
-        float d1 = a1 - b1;
-        // distance between ending points of intervals
-        float d2 = b2 - a2;
-        // the smaller distance is what we care for
-        if (d1 < d2)
+        // inside
+        if (id1 == id2)
         {
-            ca = a1;
-            cb = b1;
-            dist = -d1;
-            return true;
+            if (id1 == 0)
+            {
+                ret = IntersectionType::FirstWhollyInsideSecond;
+            }
+            else
+            {
+                ret = IntersectionType::SecondWhollyInsideFirst;
+            }
+            const auto d1 = std::abs(a1 - b1);
+            const auto d2 = std::abs(a2 - b2);
+
+            if (d1 < d2)
+            {
+                ca = a1;
+                cb = b1;
+                dist = -b1 + a1 - lb;
+            }
+            else
+            {
+                ca = a2;
+                cb = b2;
+                dist = -b1 + a2;
+            }            
         }
         else
         {
-            ca = a2;
-            cb = b2;
-            dist = -d2;
-            return true;
-        }        
-    }
-
-    // first interval overlaps from the left the second one
-    if (a2 > b1 && a2 < b2)
-    {
-        // distance between ending point of first interval and starting point of second interval
-        dist = -(a2 - b1);
-        // first interval penetrated into second up to its ending point
-        ca = a2;
-        // second interval collision point was the starting point
-        cb = b1;
-        return true;
-    }
-
-    // one last case remains, when the first interval overlaps on the right the second one
-    // it is the opposite of the previous case
-    dist = -(b2 - a1);
-    ca = a1;
-    cb = b2;
-    return true;
-}
-
-inline bool intersect(const AABB& aabb1, const AABB& aabb2, Eigen::Vector3f& pA1, Eigen::Vector3f& pA2, float& dist)
-{
-#if 1
-    bool intersects = true;    
-    dist = std::numeric_limits<float>::max();
-    for (int i = 0; i < 3; ++i)
-    {
-        float distAxis;
-        bool intersectsAxis = intersectIntervals(aabb1.m_min[i], aabb1.m_max[i], aabb2.m_min[i], aabb2.m_max[i], pA1[i], pA2[i], distAxis);
-        intersects = intersects && intersectsAxis;
-        if (distAxis < dist)
-        {
-            dist = distAxis;
+            ret = IntersectionType::Intersection;
+            // if the first interval has a bigger starting point than the second
+            // then the second is on the left of the first
+            if (id1 == 0)
+            {
+               ca = a1;
+               cb = b2;
+               dist = -b1 + a1 - lb;
+            }
+            else // the second is on the right of the first (since we know they intersect)
+            {
+                ca = a2;
+                cb = b1;
+                dist = -b1 + a2;
+            }            
         }
     }
-    return intersects;
+    else
+    {
+        // no intersection, the dist is correct
+        if (id1 == 0)
+        {
+            ca = a1;
+            cb = b2;
+        }
+        else // the second is on the right of the first (since we know they intersect)
+        {
+            ca = a2;
+            cb = b1;
+        }            
+    }
+    
+    return ret;
+}
+
+inline IntersectionType intersect(const AABB& aabb1, const AABB& aabb2, Eigen::Vector3f& pA1, Eigen::Vector3f& pA2, Eigen::Vector3f& dist)
+{
+#if 1
+    IntersectionType intersects[3];
+    for (int i = 0; i < 3; ++i)
+    {
+        intersects[i] = intersectIntervals(aabb1.m_min[i], aabb1.m_max[i], aabb2.m_min[i], aabb2.m_max[i], pA1[i], pA2[i], dist[i]);
+    }
+    // if there is a separating axis, then there's no intersection
+    if (intersects[0] == IntersectionType::None || intersects[1] == IntersectionType::None || intersects[2] == IntersectionType::None)
+    {
+        return IntersectionType::None;
+    }
+    // if all the intersections are the same, then that is the final intersection
+    if (intersects[0] == intersects[1] && intersects[0] == intersects[2])
+    {
+        return intersects[0];
+    }
+    // if there's a mixture of intersections, then surely there is just simple intersection
+    return IntersectionType::Intersection;
 #else
 
     float ca, cb;
-    float a1 = 2;
-    float a2 = 10;
-    float b1 = -3;
-    float b2 = 3;
+    float a1 = 7;
+    float a2 = 12;
+    float b1 = 13;
+    float b2 = 14;
+    float bl = std::abs(b2 - b1);
 
-    bool ii = intersectIntervals(a1, a2, b1, b2, ca, cb, dist);
-    b1 -= dist;
-    b2 -= dist;
+    auto ii = intersectIntervals(a1, a2, b1, b2, ca, cb, dist);
+    if (ii != IntersectionType::None)
+    {
+        b1 += dist;
+        b2 += dist;
+    }
+    float bl2 = std::abs(b2 - b1);
+    assert(bl2 == bl);
     ii = intersectIntervals(a1, a2, b1, b2, ca, cb, dist);
-    assert(ii == false);
+    assert(ii == IntersectionType::None);
 
-    return false;
+    return ii;
 #endif
 }

@@ -96,6 +96,64 @@ namespace util
 		return {min_v, min_i};
 	}
 
+	inline std::pair<float, int> max_component_index(float x, float y, float z)
+	{
+		float max_v = x;
+		int max_i = 0;
+		if (y > max_v)
+		{
+			max_v = y;
+			max_i = 1;
+		}
+		if (z > max_v)
+		{
+			max_v = z;
+			max_i = 2;
+		}
+		return {max_v, max_i};
+	}
+
+	inline std::pair<float, int> min_component_index(float x, float y, float z)
+	{
+		float min_v = x;
+		int min_i = 0;
+		if (y < min_v)
+		{
+			min_v = y;
+			min_i = 1;
+		}
+		if (z < min_v)
+		{
+			min_v = z;
+			min_i = 2;
+		}
+		return {min_v, min_i};
+	}
+
+	inline std::pair<float, int> max_component_index(float x, float y)
+	{
+		float max_v = x;
+		int max_i = 0;
+		if (y > max_v)
+		{
+			max_v = y;
+			max_i = 1;
+		}
+		return {max_v, max_i};
+	}
+
+	inline std::pair<float, int> min_component_index(float x, float y)
+	{
+		float min_v = x;
+		int min_i = 0;
+		if (y < min_v)
+		{
+			min_v = y;
+			min_i = 1;
+		}
+		return {min_v, min_i};
+	}
+
 	inline Eigen::Vector3f midpoint(const Eigen::Vector3f& a, const Eigen::Vector3f& b)
 	{
 		return (a + b).array() * 0.5f;

@@ -110,4 +110,13 @@ public:
         sphere->m_lighting = LightingType::LightSource;
         m_primitives.push_back(sphere);
     }
+
+    void eraseObj(const PrimPtr p)
+    {
+        auto it = std::find(m_primitives.begin(), m_primitives.end(), p);
+        if (it != m_primitives.end())
+        {
+            m_primitives.erase(it);
+        }
+    }
 };
